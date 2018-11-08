@@ -1,5 +1,7 @@
 # VTParse - An implementation of Paul Williams' DEC compatible state machine parser
 
+[![Build Status](https://travis-ci.org/astoeckel/vtparse.svg?branch=master)](https://travis-ci.org/astoeckel/vtparse)
+
 Slightly "modernised" version of the [vtparse](https://github.com/haberman/vtparse) library originally created by Joshua Haberman. `vtparse` implements a (mostly) DEC compatible state machine described here: [http://www.vt100.net/emu/dec_ansi_parser](http://www.vt100.net/emu/dec_ansi_parser).
 
 `vtparse` is useful when implementing terminal emulators for the VT100 and newer hardware terminals. The library is written in C89 and has zero dependencies, including the standard library (hence no `malloc`, `memset`, etc.).
