@@ -15,25 +15,26 @@ $states = {}
 $anywhere_transitions = {
     0x18       => [:execute, transition_to(:GROUND)],
     0x1a       => [:execute, transition_to(:GROUND)],
-    0x80..0x8f => [:execute, transition_to(:GROUND)],
-    0x91..0x97 => [:execute, transition_to(:GROUND)],
-    0x99       => [:execute, transition_to(:GROUND)],
-    0x9a       => [:execute, transition_to(:GROUND)],
-    0x9c       => transition_to(:GROUND),
+#    0x80..0x8f => [:execute, transition_to(:GROUND)],
+#    0x91..0x97 => [:execute, transition_to(:GROUND)],
+#    0x99       => [:execute, transition_to(:GROUND)],
+#    0x9a       => [:execute, transition_to(:GROUND)],
+#    0x9c       => transition_to(:GROUND),
     0x1b       => transition_to(:ESCAPE),
-    0x98       => transition_to(:SOS_PM_APC_STRING),
-    0x9e       => transition_to(:SOS_PM_APC_STRING),
-    0x9f       => transition_to(:SOS_PM_APC_STRING),
-    0x90       => transition_to(:DCS_ENTRY),
-    0x9d       => transition_to(:OSC_STRING),
-    0x9b       => transition_to(:CSI_ENTRY),
+#    0x98       => transition_to(:SOS_PM_APC_STRING),
+#    0x9e       => transition_to(:SOS_PM_APC_STRING),
+#    0x9f       => transition_to(:SOS_PM_APC_STRING),
+#    0x90       => transition_to(:DCS_ENTRY),
+#    0x9d       => transition_to(:OSC_STRING),
+#    0x9b       => transition_to(:CSI_ENTRY),
 }
 
 $states[:GROUND] = {
     0x00..0x17 => :execute,
     0x19       => :execute,
     0x1c..0x1f => :execute,
-    0x20..0x7f => :print,
+#    0x20..0x7f => :print,
+    0x20..0xf7 => :print, # f7 is the maximum byte in a UTF-8 string
 }
 
 $states[:ESCAPE] = {

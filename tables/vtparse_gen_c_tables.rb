@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require_relative 'vtparse_tables'
 
 class String
@@ -6,7 +8,24 @@ class String
     end
 end
 
-File.open("vtparse_table.h", "w") { |f|
+tar_hfile = "vtparse_table.h"
+tar_cfile = "vtparse_table.c"
+
+File.open(tar_hfile, "w") { |f|
+    f.puts "/******************************************************************************"
+    f.puts " * Note: This file was automatically generated. Please execute                *"
+    f.puts " * tables/vtparse_gen_c_tables.rb to re-generate this file.                   *"
+    f.puts " ******************************************************************************/"
+    f.puts
+    f.puts "#ifndef VTPARSE_VTPARSE_TABLE_H"
+    f.puts "#define VTPARSE_VTPARSE_TABLE_H"
+    f.puts
+    f.puts "#ifdef __cplusplus"
+    f.puts "extern \"C\" {"
+    f.puts "#endif"
+    f.puts
+    f.puts "#ifndef VTPARSE_VTPARSE_H"
+    f.puts
     f.puts "typedef enum {"
     $states_in_order.each_with_index { |state, i|
         f.puts "   VTPARSE_STATE_#{state.to_s.upcase} = #{i+1},"
@@ -19,20 +38,34 @@ File.open("vtparse_table.h", "w") { |f|
     }
     f.puts "} vtparse_action_t;"
     f.puts
-    f.puts "typedef unsigned char state_change_t;"
-    f.puts "extern state_change_t STATE_TABLE[#{$states_in_order.length}][256];"
+    f.puts
+    f.puts "#endif"
+    f.puts
+    f.puts "typedef unsigned char vtparse_state_change_t;"
+    f.puts
+    f.puts "extern vtparse_state_change_t STATE_TABLE[#{$states_in_order.length}][256];"
     f.puts "extern vtparse_action_t ENTRY_ACTIONS[#{$states_in_order.length}];"
     f.puts "extern vtparse_action_t EXIT_ACTIONS[#{$states_in_order.length}];"
     f.puts "extern char *ACTION_NAMES[#{$actions_in_order.length+1}];"
     f.puts "extern char *STATE_NAMES[#{$states_in_order.length+1}];"
     f.puts
+    f.puts "#ifdef __cplusplus"
+    f.puts "}"
+    f.puts "#endif"
+    f.puts
+    f.puts "#endif /* VTPARSE_VTPARSE_TABLE_H */"
+    f.puts
 }
 
-puts "Wrote vtparse_table.h"
+puts "Wrote #{tar_hfile}"
 
-File.open("vtparse_table.c", "w") { |f|
+File.open(tar_cfile, "w") { |f|
+    f.puts "/******************************************************************************"
+    f.puts " * Note: This file was automatically generated. Please execute                *"
+    f.puts " * tables/vtparse_gen_c_tables.rb to re-generate this file.                   *"
+    f.puts " ******************************************************************************/"
     f.puts
-    f.puts '#include "vtparse_table.h"'
+    f.puts '#include <vtparse/vtparse_table.h>'
     f.puts
     f.puts "char *ACTION_NAMES[] = {"
     f.puts "   \"<no action>\","
@@ -48,7 +81,7 @@ File.open("vtparse_table.c", "w") { |f|
     }
     f.puts "};"
     f.puts
-    f.puts "state_change_t STATE_TABLE[#{$states_in_order.length}][256] = {"
+    f.puts "vtparse_state_change_t STATE_TABLE[#{$states_in_order.length}][256] = {"
     $states_in_order.each_with_index { |state, i|
         f.puts "  {  /* VTPARSE_STATE_#{state.to_s.upcase} = #{i} */"
         $state_tables[state].each_with_index { |state_change, i|
@@ -89,7 +122,10 @@ File.open("vtparse_table.c", "w") { |f|
     }
     f.puts "};"
     f.puts
+    f.puts "#ifdef __cplusplus"
+    f.puts "}"
+    f.puts "#endif"
 }
 
-puts "Wrote vtparse_table.c"
+puts "Wrote #{tar_cfile}"
 
