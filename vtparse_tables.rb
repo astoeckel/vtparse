@@ -218,7 +218,7 @@ def expand_ranges(hash_with_ranges_as_keys)
             range.each { |i|
                 array[i] = val
             }
-        elsif range.kind_of?(Fixnum)
+        elsif range.kind_of?(Integer)
             array[range] = val
         end
     }
