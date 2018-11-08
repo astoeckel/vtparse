@@ -1,5 +1,4 @@
-
-require 'vtparse_tables'
+require_relative 'vtparse_tables'
 
 class String
     def pad(len)
