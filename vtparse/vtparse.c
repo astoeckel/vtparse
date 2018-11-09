@@ -131,8 +131,8 @@ static int vtparse_handle_action(vtparse_t *parser, vtparse_action_t action) {
 	vtparse_private_t *priv = &parser->priv_;
 	int must_return = 0;
 
-	if (vtparse_execute_action(parser, action, parser->ch)) {
-		/* Before we can return with the actual action, we need to return some
+	if (action && vtparse_execute_action(parser, action, parser->ch)) {
+		/* Before we can return the actual action, we need to return some
 		   previously buffered data */
 		if (parser->data_end - parser->data_begin) {
 			return 1; /* Need to return to the user */
