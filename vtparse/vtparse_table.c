@@ -1731,7 +1731,7 @@ vtparse_state_change_t STATE_TABLE[14][256] = {
 /*4  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
 /*5  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
 /*6  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
-/*7  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
+/*7  */  0                                 | (VTPARSE_STATE_GROUND              << 4),
 /*8  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
 /*9  */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
 /*10 */  VTPARSE_ACTION_IGNORE             | (0                                 << 4),
