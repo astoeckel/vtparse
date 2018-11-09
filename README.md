@@ -16,6 +16,7 @@ The following changes were made to the original library:
 * **Unit tests**<br/>
 (*WORK IN PROGRESS*)
 * **Return value based parsing**<br/>Eliminated the callback function. `vtparse_parse` returns whenever an event happens. `VTPARSE_ACTION_PUT` and `VTPARSE_ACTION_PRINT` do not trigger an event for each character, instead the corresponding byte range in the input buffer is indicated.
+* **Termination of OSC with BEL**<br/>Another DEC-incompatible xterm extension. This feature is e.g. used by `bash` to set the window title.
 
 
 ## How to use
