@@ -56,9 +56,11 @@ int main() {
 			   report! */
 			printf("Received action %s\n", vtparse_action_str(parser.action));
 
-			/* If data_begin/data_end are set, there is a byte sequence that we
-			   can process VTPARSE_ACTION_PUT/VTPARSE_ACTION_PRINT. Otherwise
-			   print the "parser.ch" for control sequences. */
+			/* If data_end - data_begin > 0, there is a byte sequence that we
+			   can process. This is relevent for VTPARSE_ACTION_PUT/
+			   VTPARSE_ACTION_OSC_PUT/VTPARSE_ACTION_PRINT. For escape
+			   sequences, the relevant letter is stored in "parser.ch" for
+			   control sequences. */
 			if (parser.data_begin != parser.data_end) {
 				for (data = parser.data_begin; data < parser.data_end;
 				     data++) {

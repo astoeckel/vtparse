@@ -61,7 +61,7 @@ See `example/vtparse_example.c` for a complete example.
 ### Manual build
 
 `vtparse` has zero dependencies; it solely consists of the files in the `vtparse` folder. You can for example compile the demo application by running
-```
+```bash
 git clone https://github.com/astoeckel/vtparse
 cd vtparse
 gcc -std=c89 -Wall -o vtparse_example example/vtparse_example.c vtparse/vtparse.c vtparse/vtparse_table.c
@@ -71,7 +71,7 @@ echo -e "Hello\nWorld" ./vtparse_example
 ### Using meson
 
 This project supports the Meson build system. To install Meson, run `pip3 install --user meson`. Meson furthermore depends on `ninja`. `ninja` (sometimes called `ninja-build`) should be provided by your Linux distribution. To build the library and run the tests run
-```
+```bash
 git clone https://github.com/astoeckel/vtparse
 cd vtparse && mkdir build && cd build
 meson -Dbuildtype=release ..
