@@ -63,6 +63,7 @@ static int vtparse_execute_action(vtparse_t *parser, vtparse_action_t action,
 	switch (action) {
 		case VTPARSE_ACTION_PRINT:
 		case VTPARSE_ACTION_PUT:
+		case VTPARSE_ACTION_OSC_PUT:
 			parser->data_end++;
 			parser->action = action;
 			return 0;
@@ -70,7 +71,6 @@ static int vtparse_execute_action(vtparse_t *parser, vtparse_action_t action,
 		case VTPARSE_ACTION_EXECUTE:
 		case VTPARSE_ACTION_HOOK:
 		case VTPARSE_ACTION_OSC_START:
-		case VTPARSE_ACTION_OSC_PUT:
 		case VTPARSE_ACTION_OSC_END:
 		case VTPARSE_ACTION_UNHOOK:
 		case VTPARSE_ACTION_CSI_DISPATCH:
