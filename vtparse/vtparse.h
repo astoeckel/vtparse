@@ -42,23 +42,6 @@ extern "C" {
 #define VTPARSE_MAX_PARAMS 16U
 
 typedef enum {
-	VTPARSE_STATE_CSI_ENTRY = 1,
-	VTPARSE_STATE_CSI_IGNORE = 2,
-	VTPARSE_STATE_CSI_INTERMEDIATE = 3,
-	VTPARSE_STATE_CSI_PARAM = 4,
-	VTPARSE_STATE_DCS_ENTRY = 5,
-	VTPARSE_STATE_DCS_IGNORE = 6,
-	VTPARSE_STATE_DCS_INTERMEDIATE = 7,
-	VTPARSE_STATE_DCS_PARAM = 8,
-	VTPARSE_STATE_DCS_PASSTHROUGH = 9,
-	VTPARSE_STATE_ESCAPE = 10,
-	VTPARSE_STATE_ESCAPE_INTERMEDIATE = 11,
-	VTPARSE_STATE_GROUND = 12,
-	VTPARSE_STATE_OSC_STRING = 13,
-	VTPARSE_STATE_SOS_PM_APC_STRING = 14,
-} vtparse_state_t;
-
-typedef enum {
 	VTPARSE_ACTION_CLEAR = 1,
 	VTPARSE_ACTION_COLLECT = 2,
 	VTPARSE_ACTION_CSI_DISPATCH = 3,
@@ -81,10 +64,10 @@ typedef enum {
  * in this structure.
  */
 typedef struct vtparse_private {
+	int state;
 	int cycle;
 	unsigned char change;
 } vtparse_private_t;
-
 
 typedef struct vtparse {
 	/**
@@ -92,11 +75,6 @@ typedef struct vtparse {
 	 * given data is just text.
 	 */
 	vtparse_action_t action;
-
-	/**
-	 * Current parser state.
-	 */
-	vtparse_state_t state;
 
 	/**
 	 * Character that is currently being processed.
@@ -154,21 +132,39 @@ typedef struct vtparse {
 void vtparse_init(vtparse_t *parser);
 
 /**
- * Parses the given memory buffer. This function returns either when the end of
- * the buffer has been reached or a command
+ * Parses the given byte sequence buffer. This function either returns when the
+ * end of the buffer has been reached or a command was found in the input
+ * stream. Use the vtparse_has_event() method to check whether there is an event
+ * waiting to be processed (this is always the case if buf_len was greater than
+ * zero).
+ *
+ * @param parser is the vtparse_t instance that should be used. Information
+ * about the command that was found will be written to this instance.
+ * @param buf is a pointer at the character buffer that should be processed.
+ * @param buf_len is the length of the buffer in bytes.
+ * @return The number of bytes that read from the given input buffer. To
+ * continue parsing, call vtparse_parse() again, but advance "buf" by this
+ * number of bytes (and correspondingly decrement buf_len). Note that a return
+ * value of zero does not mean that there is no event waiting. Call
+ * vtparse_has_event() to determine whether the currently is an event that can
+ * be processed. As long as this function returns true, you should re-call
+ * vtparse_parse() with a zero-length input buffer to obtain any remaining
+ * events.
  */
 unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
                            unsigned int buf_len);
 
 /**
+ * Returns true if the given vtparse_t instance currently holds information
+ * about an event that should be processed. If this function returns true, you
+ * should call vtparse_parse()
+ */
+int vtparse_has_event(const vtparse_t *parser);
+
+/**
  * Returns a string representation of the given action enum.
  */
 const char *vtparse_action_str(vtparse_action_t action);
-
-/**
- * Returns a string representation of the given state enum.
- */
-const char *vtparse_state_str(vtparse_state_t state);
 
 #ifdef __cplusplus
 }

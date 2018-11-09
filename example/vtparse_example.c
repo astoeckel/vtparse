@@ -45,9 +45,12 @@ int main() {
 		buf_pos = 0;
 
 		/* Feed the buffer into the parser until we processed all bytes */
-		while (buf_pos < did_read) {
+		while (1) {
 			/* Parse the data and advance the cursor position */
 			buf_pos += vtparse_parse(&parser, buf + buf_pos, did_read - buf_pos);
+			if (!vtparse_has_event(&parser)) {
+				break; /* No event to print, exit loop */
+			}
 
 			/* The parser returned, so there must be something interesting to
 			   report! */

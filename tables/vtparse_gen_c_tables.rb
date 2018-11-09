@@ -24,13 +24,13 @@ File.open(tar_hfile, "w") { |f|
     f.puts "extern \"C\" {"
     f.puts "#endif"
     f.puts
-    f.puts "#ifndef VTPARSE_VTPARSE_H"
-    f.puts
     f.puts "typedef enum {"
     $states_in_order.each_with_index { |state, i|
         f.puts "   VTPARSE_STATE_#{state.to_s.upcase} = #{i+1},"
     }
     f.puts "} vtparse_state_t;"
+    f.puts
+    f.puts "#ifndef VTPARSE_VTPARSE_H"
     f.puts
     f.puts "typedef enum {"
     $actions_in_order.each_with_index { |action, i|

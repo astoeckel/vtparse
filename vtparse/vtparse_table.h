@@ -10,8 +10,6 @@
 extern "C" {
 #endif
 
-#ifndef VTPARSE_VTPARSE_H
-
 typedef enum {
    VTPARSE_STATE_CSI_ENTRY = 1,
    VTPARSE_STATE_CSI_IGNORE = 2,
@@ -28,6 +26,8 @@ typedef enum {
    VTPARSE_STATE_OSC_STRING = 13,
    VTPARSE_STATE_SOS_PM_APC_STRING = 14,
 } vtparse_state_t;
+
+#ifndef VTPARSE_VTPARSE_H
 
 typedef enum {
    VTPARSE_ACTION_CLEAR = 1,

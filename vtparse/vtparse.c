@@ -41,7 +41,8 @@ typedef enum vtparse_cycle {
 	VTPARSE_CYCLE_EXIT_ACTION = 1,
 	VTPARSE_CYCLE_ACTION = 2,
 	VTPARSE_CYCLE_ENTRY_ACTION = 3,
-	VTPARSE_CYCLE_ENTRY_ACTION_DONE = 4
+	VTPARSE_CYCLE_ENTRY_ACTION_DONE = 4,
+	VTPARSE_CYCLE_READ_CHAR_DONE = 5
 } vtparse_cycle_t;
 
 /**
@@ -143,8 +144,8 @@ static int vtparse_handle_action(vtparse_t *parser, vtparse_action_t action) {
 	}
 
 	/* Go to the next cycle */
-	priv->cycle =
-	    (!STATE(priv->change)) ? VTPARSE_CYCLE_READ_CHAR : (priv->cycle + 1);
+	priv->cycle = (!STATE(priv->change)) ? VTPARSE_CYCLE_READ_CHAR_DONE
+	                                     : (priv->cycle + 1);
 	return must_return;
 }
 
@@ -157,7 +158,6 @@ void vtparse_init(vtparse_t *parser) {
 
 	/* Reset all non-array fields */
 	parser->action = 0;
-	parser->state = 0;
 	parser->ch = 0;
 	parser->num_params = 0;
 	parser->num_intermediate_chars = 0;
@@ -174,8 +174,9 @@ void vtparse_init(vtparse_t *parser) {
 	}
 
 	/* Reset the private data */
+	parser->priv_.change = 0;
 	parser->priv_.cycle = VTPARSE_CYCLE_READ_CHAR;
-	parser->state = VTPARSE_STATE_GROUND;
+	parser->priv_.state = VTPARSE_STATE_GROUND;
 }
 
 unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
@@ -199,6 +200,11 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 			case VTPARSE_CYCLE_READ_CHAR: {
 				/* Return if we have reached the end of the buffer */
 				if (n_read >= buf_len) {
+					/* Switch to a different state to indicate that we actually
+					   have data waiting for the user */
+					if (n_read) {
+						priv->cycle = VTPARSE_CYCLE_READ_CHAR_DONE;
+					}
 					return n_read;
 				}
 
@@ -206,7 +212,7 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 				parser->ch = ch = buf[n_read++];
 
 				/* Determine which state change is required */
-				priv->change = STATE_TABLE[parser->state - 1][ch];
+				priv->change = STATE_TABLE[priv->state - 1][ch];
 				if (STATE(priv->change)) {
 					priv->cycle = VTPARSE_CYCLE_EXIT_ACTION;
 				} else {
@@ -218,7 +224,7 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 			/* Execute the exit action for the last state the parser was in */
 			case VTPARSE_CYCLE_EXIT_ACTION:
 				if (vtparse_handle_action(parser,
-				                          EXIT_ACTIONS[parser->state - 1])) {
+				                          EXIT_ACTIONS[priv->state - 1])) {
 					return n_read; /* Return to the user if necessary */
 				}
 				break;
@@ -240,19 +246,24 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 
 			/* Transition to the next state */
 			case VTPARSE_CYCLE_ENTRY_ACTION_DONE:
-				parser->priv_.cycle = VTPARSE_CYCLE_READ_CHAR;
-				parser->state = STATE(priv->change);
+				priv->cycle = VTPARSE_CYCLE_READ_CHAR;
+				priv->state = STATE(priv->change);
+				break;
+
+			/* Transition back to the READ_CHAR state */
+			case VTPARSE_CYCLE_READ_CHAR_DONE:
+				priv->cycle = VTPARSE_CYCLE_READ_CHAR;
 				break;
 		}
 	}
 	return n_read;
 }
 
-const char *vtparse_action_str(vtparse_action_t action) {
-	return ACTION_NAMES[action];
+int vtparse_has_event(const vtparse_t *parser) {
+	return (!parser->error) && parser->priv_.cycle != VTPARSE_CYCLE_READ_CHAR;
 }
 
-const char *vtparse_state_str(vtparse_state_t state) {
-	return STATE_NAMES[state];
+const char *vtparse_action_str(vtparse_action_t action) {
+	return ACTION_NAMES[action];
 }
 
