@@ -2,19 +2,56 @@
 
 [![Build Status](https://travis-ci.org/astoeckel/vtparse.svg?branch=master)](https://travis-ci.org/astoeckel/vtparse)
 
-Slightly "modernised" version of the [vtparse](https://github.com/haberman/vtparse) library originally created by Joshua Haberman. `vtparse` implements a (mostly) DEC compatible state machine described here: [http://www.vt100.net/emu/dec_ansi_parser](http://www.vt100.net/emu/dec_ansi_parser).
+Modernized version of Joshua Haberman's [vtparse](https://github.com/haberman/vtparse) library. `vtparse` implements an almost DEC (Digital Equipment Corporation) compatible state machine described by Paul Williams. More information on the state machine can be found here: [http://www.vt100.net/emu/dec_ansi_parser](http://www.vt100.net/emu/dec_ansi_parser).
 
-`vtparse` is useful when implementing terminal emulators for the VT100 and newer hardware terminals. The library is written in C89 and has zero dependencies, including the standard library (hence no `malloc`, `memset`, etc.).
+`vtparse` is useful when implementing terminal emulators for the VT100 and newer hardware terminals manufactured by DEC. The library is written in C89 and has zero dependencies; this includes no dependencies on the standard library (hence no `malloc`, `memset`, etc.). Correspondingly this code should easily run on embedded hardware without an operating system.
 
-The following changes were made to the library:
+## New features
 
-* **Cleaner code** (subjectively...)<br/>Moved private symbols out of the public header and prefixed all symbols with `vtparse_`. Errors and warnings in with modern Ruby were eliminated. Yielded to my borderline compulsive urge to add useless comments to the code.
+The following changes were made to the original library:
+
+* **Cleaner code** (well, subjectively...)<br/>Moved private symbols out of the public header and prefixed all symbols with `vtparse_`. Errors and warnings with modern Ruby were eliminated. Gave in to my borderline compulsive urge to add useless comments to the code.
 * **Build system**<br/>Switched to the Meson build system; generated headers are included in the repository.
 * **UTF-8 support**<br/>UTF-8 sequences are passed through in their entirety. Unfortunately, this means that the library is no longer DEC compatible, since 8-bit control characters no longer work. This should be irrelevant in modern applications.
 * **Unit tests**<br/>
 (*WORK IN PROGRESS*)
 * **Return value based parsing**<br/>Eliminated the callback function. `vtparse_parse` returns whenever an event happens. `VTPARSE_ACTION_PUT` and `VTPARSE_ACTION_PRINT` do not trigger an event for each character, instead the corresponding byte range in the input buffer is indicated.
 
+
+## How to use
+
+### Initializing the parser
+
+Use `void vtparse_init(vtparse_t *parser)` to initialize and reset the parser. Example:
+```C
+vtparse_t parser;
+vtparse_init(&parser);
+```
+
+### Parsing a byte sequence
+
+Use `unsigned int vtparse_parse(vtparse_t *parser, unsigned char *buf, unsigned int buf_len)` to parse a byte sequence. The function will return the number of bytes that were read from the input buffer. This value may be smaller than `buf_len` and even be equal to zero. However, this does not indicated an error, it just means that `vtparse_parse` needs to be called again with the `buf` pointer begin advanced by exactly this value. In fact, you should call `vtparse_parse` with a zero-length input buffer until `vtparse_has_event` returns `false`. For example:
+```C
+unsigned char buf[1024];
+unsigned int buf_pos, did_read;
+vtparse_t parser;
+vtparse_init(&parser);
+do {
+	did_read = fread(buf, 1, sizeof(buf), stdin);
+	buf_pos = 0;
+	while (1) {
+		buf_pos += vtparse_parse(&parser, buf + buf_pos, did_read - buf_pos);
+		if (!vtparse_has_event(&parser)) {
+			break; /* No event to print, exit loop */
+		}
+
+		/* We have an event, process */
+		/* ... */
+	}
+} while (did_read > 0); /* Continue until EOF */
+```
+
+See `example/vtparse_example.c` for a complete example.
 
 ## Building
 
