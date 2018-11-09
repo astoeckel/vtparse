@@ -238,8 +238,8 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 
 			/* Execute the entry action if there was a state change */
 			case VTPARSE_CYCLE_ENTRY_ACTION:
-				if (vtparse_handle_action(parser,
-				                          ENTRY_ACTIONS[STATE(priv->change)])) {
+				if (vtparse_handle_action(
+				        parser, ENTRY_ACTIONS[STATE(priv->change) - 1])) {
 					return n_read; /* Return to the user if necessary */
 				}
 				break;
