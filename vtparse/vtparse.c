@@ -209,6 +209,10 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 				}
 
 				/* Read the next character */
+				if (parser->data_begin == parser->data_end) {
+					parser->data_begin = buf + n_read;
+					parser->data_end = buf + n_read;
+				}
 				parser->ch = ch = buf[n_read++];
 
 				/* Determine which state change is required */
