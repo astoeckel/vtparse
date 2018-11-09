@@ -89,7 +89,7 @@ static int vtparse_execute_action(vtparse_t *parser, vtparse_action_t action,
 				parser->intermediate_chars[parser->num_intermediate_chars++] =
 				    ch;
 			}
-			return 1;
+			return 0;
 
 		case VTPARSE_ACTION_PARAM:
 			/* process the param character */
