@@ -58,3 +58,12 @@ exe_test_vtparse = executable(
     dependencies: [dep_foxenunit, dep_vtparse]
 )
 test('test_vtparse', exe_test_vtparse)
+
+# Build the performance test
+exe_test_vtparse_performance = executable(
+    'test_vtparse_performance',
+    [
+        'test/test_vtparse_performance.c'
+    ],
+    dependencies: [dep_foxenunit, dep_vtparse]
+)
