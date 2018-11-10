@@ -81,7 +81,7 @@ ninja test
 
 ## Performance
 
-`vtparse` is moderately fast at about 3-14ns per byte (on a Intel Core i7 965@3.2GHz). The largest bottlenecks are the state transition table lookups and function-call overhead when returning to user-code. Correspondingly, control-sequence heavy inputs (such as those produced by [lolcat](https://github.com/busyloop/lolcat)) with 24-bit colours are relatively slow. Processing the entirety of [Hamlet](http://www.gutenberg.org/files/1524/1524-0.txt) when piped through *lolcat* takes about 62.4ms compared to 0.7ms for *Hamlet* without any CSI control sequences.
+`vtparse` is moderately fast at about 3-14ns per byte (on a Intel Core i7 965 at 3.2GHz). The largest bottlenecks are the state transition table lookups and function-call overhead when returning to user-code. Correspondingly, control-sequence heavy inputs (such as those produced by [lolcat](https://github.com/busyloop/lolcat)) with 24-bit colours are relatively slow. Processing the entirety of [Hamlet](http://www.gutenberg.org/files/1524/1524-0.txt) when piped through *lolcat* takes about 62.4ms compared to 0.7ms for *Hamlet* without any CSI control sequences.
 
 Feel free to use the included `test_vtparse_performance` program for performance measurements
 ```
