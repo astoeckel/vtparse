@@ -75,6 +75,10 @@ static int vtparse_execute_action(vtparse_t *parser, vtparse_action_t action,
 		case VTPARSE_ACTION_UNHOOK:
 		case VTPARSE_ACTION_CSI_DISPATCH:
 		case VTPARSE_ACTION_ESC_DISPATCH:
+			if (parser->error) {
+				parser->error = 0;
+				return 0;
+			}
 			return 1;
 
 		case VTPARSE_ACTION_IGNORE:
@@ -122,6 +126,7 @@ static int vtparse_execute_action(vtparse_t *parser, vtparse_action_t action,
 			return 0;
 
 		default:
+			/* This line should never be reached */
 			parser->error = 1;
 			return 0;
 	}
@@ -183,6 +188,7 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
                            unsigned int buf_len) {
 	/* Number of characters read from the input */
 	unsigned char ch;
+	vtparse_state_change_t change;
 	int n_read = 0;
 
 	/* Convenient reference at the private data */
@@ -202,7 +208,7 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 				if (n_read >= buf_len) {
 					/* Switch to a different state to indicate that we actually
 					   have data waiting for the user */
-					if (n_read) {
+					if (n_read && parser->action) {
 						priv->cycle = VTPARSE_CYCLE_READ_CHAR_DONE;
 					}
 					return n_read;
@@ -249,8 +255,10 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 				priv->cycle = VTPARSE_CYCLE_READ_CHAR;
 				priv->state = STATE(priv->change);
 
-				/* Set data_begin/data_end if there is no data waiting */
+				/* Set data_begin/data_end if there is no data waiting. This is
+				   relevant when recovering from error conditions. */
 				if (parser->data_begin == parser->data_end) {
+					parser->action = 0;
 					parser->data_begin = buf + n_read;
 					parser->data_end = buf + n_read;
 				}
@@ -267,7 +275,7 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 }
 
 int vtparse_has_event(const vtparse_t *parser) {
-	return (!parser->error) && parser->priv_.cycle != VTPARSE_CYCLE_READ_CHAR;
+	return parser->priv_.cycle != VTPARSE_CYCLE_READ_CHAR;
 }
 
 const char *vtparse_action_str(vtparse_action_t action) {
