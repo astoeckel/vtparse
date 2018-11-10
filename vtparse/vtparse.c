@@ -218,11 +218,18 @@ unsigned int vtparse_parse(vtparse_t *parser, const unsigned char *buf,
 				parser->ch = ch = buf[n_read++];
 
 				/* Determine which state change is required */
-				priv->change = STATE_TABLE[priv->state - 1][ch];
-				if (STATE(priv->change)) {
+				priv->change = change = STATE_TABLE[priv->state - 1][ch];
+				if (STATE(change)) {
 					priv->cycle = VTPARSE_CYCLE_EXIT_ACTION;
-				} else {
-					priv->cycle = VTPARSE_CYCLE_ACTION;
+				} else if (ACTION(change)) {
+					/* Fast path for printing (improves performance for
+					 * VTPARSE_ACTION_PRINT) by about x2.5 */
+					if (ACTION(change) == VTPARSE_ACTION_PRINT) {
+						parser->action = VTPARSE_ACTION_PRINT;
+						parser->data_end++;
+					} else {
+						priv->cycle = VTPARSE_CYCLE_ACTION;
+					}
 				}
 				break;
 			}
