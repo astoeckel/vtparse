@@ -28,6 +28,8 @@
  * @author Andreas Stöckel
  */
 
+#include <string.h>
+
 #include <foxen/unittest.h>
 
 #include <vtparse/vtparse.h>
@@ -235,6 +237,66 @@ void test_multiparam_csi() {
 	EXPECT_FALSE(vtparse_has_event(&parser));
 }
 
+void test_param_overflow_csi_1() {
+	const unsigned char buf[] =
+	    "\e[1m\e[38;2;255;128;255;;;;;;;;;;;;;;;mPINK\e[0m";
+	const size_t buf_len = sizeof(buf) - 1U;
+
+	vtparse_t parser;
+	vtparse_init(&parser);
+
+	EXPECT_FALSE(vtparse_has_event(&parser));
+	EXPECT_EQ(4, vtparse_parse(&parser, buf, buf_len));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_CSI_DISPATCH, parser.action);
+	EXPECT_EQ('m', parser.ch);
+	EXPECT_EQ(1, parser.num_params);
+	EXPECT_EQ(1, parser.params[0]);
+	EXPECT_EQ(0, parser.num_intermediate_chars);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(42, vtparse_parse(&parser, buf + 4, buf_len - 4));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_PRINT, parser.action);
+	EXPECT_EQ(0, parser.error);
+	EXPECT_EQ(buf + 38, parser.data_begin);
+	EXPECT_EQ(buf + 42, parser.data_end);
+
+	EXPECT_EQ(0U, vtparse_parse(&parser, NULL, 0U));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_CSI_DISPATCH, parser.action);
+	EXPECT_EQ('m', parser.ch);
+	EXPECT_EQ(1, parser.num_params);
+	EXPECT_EQ(0, parser.params[0]);
+	EXPECT_EQ(0, parser.num_intermediate_chars);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(0U, vtparse_parse(&parser, NULL, 0U));
+	EXPECT_FALSE(vtparse_has_event(&parser));
+}
+
+void test_param_overflow_csi_2() {
+	const unsigned char buf[] =
+	    "\e[1m\e[38;2;255;128;255;;;;;;;;;;;;;;;m";
+	const size_t buf_len = sizeof(buf) - 1U;
+
+	vtparse_t parser;
+	vtparse_init(&parser);
+
+	EXPECT_FALSE(vtparse_has_event(&parser));
+	EXPECT_EQ(4, vtparse_parse(&parser, buf, buf_len));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_CSI_DISPATCH, parser.action);
+	EXPECT_EQ('m', parser.ch);
+	EXPECT_EQ(1, parser.num_params);
+	EXPECT_EQ(1, parser.params[0]);
+	EXPECT_EQ(0, parser.num_intermediate_chars);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(34, vtparse_parse(&parser, buf + 4, buf_len - 4));
+	EXPECT_FALSE(vtparse_has_event(&parser));
+}
+
 void test_esc_1() {
 	const unsigned char buf[] = "\eN";
 	const size_t buf_len = sizeof(buf) - 1U;
@@ -361,7 +423,7 @@ void test_osc_2() {
 	EXPECT_FALSE(vtparse_has_event(&parser));
 }
 
-void test_intermediate_csi_1() {
+void test_intermediate_csi() {
 	const unsigned char buf[] = "\e[?25hABC";
 	const size_t buf_len = sizeof(buf) - 1U;
 
@@ -390,7 +452,7 @@ void test_intermediate_csi_1() {
 	EXPECT_FALSE(vtparse_has_event(&parser));
 }
 
-void test_intermediate_csi_2() {
+void test_intermediate_csi_invalid_1() {
 	const unsigned char buf[] = "\e[??25hABC";
 	const size_t buf_len = sizeof(buf) - 1U;
 
@@ -409,6 +471,57 @@ void test_intermediate_csi_2() {
 	EXPECT_FALSE(vtparse_has_event(&parser));
 }
 
+void test_intermediate_csi_invalid_2() {
+	const unsigned char buf[] = "\e[??25h";
+	const size_t buf_len = sizeof(buf) - 1U;
+
+	vtparse_t parser;
+	vtparse_init(&parser);
+
+	EXPECT_FALSE(vtparse_has_event(&parser));
+	EXPECT_EQ(7, vtparse_parse(&parser, buf, buf_len));
+	EXPECT_FALSE(vtparse_has_event(&parser));
+}
+
+void test_dcs_hook_unhook() {
+	const unsigned char buf[] = "\ePqABCD\e\\";
+	const size_t buf_len = sizeof(buf) - 1U;
+
+	vtparse_t parser;
+	vtparse_init(&parser);
+
+	EXPECT_FALSE(vtparse_has_event(&parser));
+	EXPECT_EQ(3, vtparse_parse(&parser, buf, buf_len));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_HOOK, parser.action);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(5, vtparse_parse(&parser, buf + 3, buf_len - 3));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_PUT, parser.action);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(0, vtparse_parse(&parser, buf + 8, buf_len - 8));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_UNHOOK, parser.action);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(1, vtparse_parse(&parser, buf + 8, buf_len - 8));
+	EXPECT_TRUE(vtparse_has_event(&parser));
+	EXPECT_EQ(VTPARSE_ACTION_ESC_DISPATCH, parser.action);
+	EXPECT_EQ('\\', parser.ch);
+	EXPECT_EQ(0, parser.error);
+
+	EXPECT_EQ(0U, vtparse_parse(&parser, NULL, 0U));
+	EXPECT_FALSE(vtparse_has_event(&parser));
+}
+
+void test_action_str() {
+	EXPECT_EQ(0, strcmp("<invalid>", vtparse_action_str(482)));
+	EXPECT_EQ(0, strcmp("<no action>", vtparse_action_str(0)));
+	EXPECT_EQ(0, strcmp("ERROR", vtparse_action_str(VTPARSE_ACTION_ERROR)));
+}
+
 int main() {
 	RUN(test_null);
 	RUN(test_simple);
@@ -418,11 +531,16 @@ int main() {
 	RUN(test_end_linebreak);
 	RUN(test_standalone_csi);
 	RUN(test_multiparam_csi);
+	RUN(test_param_overflow_csi_1);
+	RUN(test_param_overflow_csi_2);
 	RUN(test_esc_1);
 	RUN(test_esc_2);
 	RUN(test_osc_1);
 	RUN(test_osc_2);
-	RUN(test_intermediate_csi_1);
-	RUN(test_intermediate_csi_2);
+	RUN(test_intermediate_csi);
+	RUN(test_intermediate_csi_invalid_1);
+	RUN(test_intermediate_csi_invalid_2);
+	RUN(test_dcs_hook_unhook);
+	RUN(test_action_str);
 	DONE;
 }
