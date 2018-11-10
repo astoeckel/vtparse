@@ -286,6 +286,9 @@ int vtparse_has_event(const vtparse_t *parser) {
 }
 
 const char *vtparse_action_str(vtparse_action_t action) {
+	if (action > VTPARSE_ACTION_ERROR) {
+		return "<invalid>";
+	}
 	return ACTION_NAMES[action];
 }
 
