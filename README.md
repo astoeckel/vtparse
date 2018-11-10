@@ -1,6 +1,7 @@
 # VTParse - An implementation of Paul Williams' DEC compatible state machine parser
 
 [![Build Status](https://travis-ci.org/astoeckel/vtparse.svg?branch=master)](https://travis-ci.org/astoeckel/vtparse)
+[![Coverage Status](https://coveralls.io/repos/github/astoeckel/vtparse/badge.svg)](https://coveralls.io/github/astoeckel/vtparse)
 
 Modernized version of Joshua Haberman's [vtparse](https://github.com/haberman/vtparse) library. `vtparse` implements an almost DEC (Digital Equipment Corporation) compatible state machine described by Paul Williams. More information on the state machine can be found here: [http://www.vt100.net/emu/dec_ansi_parser](http://www.vt100.net/emu/dec_ansi_parser).
 
