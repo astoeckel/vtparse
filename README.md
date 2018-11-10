@@ -52,7 +52,7 @@ do {
 } while (did_read > 0); /* Continue until EOF */
 ```
 
-See `example/vtparse_example.c` for a complete example.
+See `examples/vtparse_example.c` for a complete example.
 
 ## Building
 

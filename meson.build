@@ -41,7 +41,7 @@ dep_vtparse = declare_dependency(
 exe_vtparse_example = executable(
     'vtparse_example',
     [
-        'example/vtparse_example.c',
+        'examples/vtparse_example.c',
     ],
     dependencies: [dep_vtparse]
 )
