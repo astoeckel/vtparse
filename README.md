@@ -5,7 +5,7 @@
 
 Modernized version of Joshua Haberman's [vtparse](https://github.com/haberman/vtparse) library. `vtparse` implements a state machine that mirrors the behaviour of DEC (Digital Equipment Corporation) VT hardware terminals. The state machine was originally described by Paul Williams; more information can be found here: [http://www.vt100.net/emu/dec_ansi_parser](http://www.vt100.net/emu/dec_ansi_parser).
 
-`vtparse` is useful when implementing terminal emulators for the VT100 and newer hardware terminals -- most Linux software expects to run on such a terminal. The library is written in C89 and has zero dependencies; including no dependencies on the standard library (hence no `malloc`, `memset`, etc.). Correspondingly, this code should easily run on embedded hardware without an operating system.
+`vtparse` is useful when implementing terminal emulators for the VT100 or newer -- most Linux command line programs implicitly expect to run on such a terminal. The library is written in C89 and has zero dependencies; this includes no dependencies on the standard library (hence no `malloc`, `memset`, etc.). Correspondingly, this code should run on embedded hardware without an operating system.
 
 ## New features
 
